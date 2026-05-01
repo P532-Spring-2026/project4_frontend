@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Catalogue</title>
+    <style>
+        table {
+            border: 1px solid;
+            border-collapse: collapse;
+            margin: 30px;
+        }
+        table td, table th {
+            border-left: 1px solid #000;
+            border-right: 1px solid #000;
+            padding: 8px;
+        }
+        table td:first-child{
+            border-left: none;
+        }
+        table td:last-child {
+            border-right: none; 
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Protocol Catalogue</h1>
+    <h3>Create Protocol</h3>
+    <label for="protocol_name">Name: </label>
+    <input id="protocol_name"/>
+    <label for="protocol_description">Description: </label>
+    <input id="protocol_description"/>
+    <br>
+    <button onclick="submitProtocol()">Create Protocol</button>
+    <br>
+    <br>
+    <h3>Add Protocol Step</h3>
+    <label for="step_parent_id"> Parent Protocol ID: </label>
+    <input id="step_parent_id"/>
+    <br>
+    <label for="step_name"> Step Name: </label>
+    <input id="step_name"/>
+    <br>
+    <label for="step_sub_id"> Sub-Protocol ID: </label>
+    <input id="step_sub_id"/>
+    <br>
+    <label for="step_deps"> Dependencies (comma separated): </label>
+    <input id="step_deps"/>
+    <br>
+    <button onclick="submitProtocolStep()">Add Step</button>
+    <br>
+    
+    <h3>View Protocols & Steps</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Protocol ID</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Steps</th>
+            </tr>
+        </thead>
+        <tbody id="protocol_list">
+        </tbody>
+    </table>
+    <h1>Resource Type Catalogue</h1>
+    <h3>Create Resource Type</h3>
+    <label for="rt_name">Name: </label>
+    <input id="rt_name"/>
+    <br>
+    <label for="rt_kind">Kind: </label>
+    <select id="rt_kind">
+        <option value="ASSET">ASSET</option>
+        <option value="CONSUMABLE">CONSUMABLE</option>
+    </select>
+    <br>
+    <label for="rt_unit">Unit of Measure: </label>
+    <input id="rt_unit"/>
+    <br>
+    <button onclick="submitResourceType()">Create Resource Type</button>
+    <br>
+    <br>
+    <h3>View Resource Types</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Kind</th>
+                <th>Unit</th>
+                <th>Pool Account ID</th>
+            </tr>
+        </thead>
+        <tbody id="rt_list"></tbody>
+    </table>
+
+
+    <script>
+        async function submitResourceType() {
+            let name = document.getElementById("rt_name").value;
+            let kind = document.getElementById("rt_kind").value;
+            let unit = document.getElementById("rt_unit").value;
+
+            if (checkEmpty(name) || checkEmpty(unit)) {
+                alert("Please fill in all fields!");
+            } else {
+                let host = "http://localhost:8080";
+                let formData = new FormData();
+                formData.append("name", name);
+                formData.append("kind", kind);
+                formData.append("unit", unit);
+
+                let request = {
+                    method: "POST", body: formData
+                };
+                let response = await fetch(host + "/api/resource-types", request);
+
+                if (response.status == 200) {
+                    alert("Resource type successfully created!");
+                    document.getElementById("rt_name").value = "";
+                    document.getElementById("rt_unit").value = "";
+                } else {
+                    let msg = await response.text();
+                    alert(msg);
+                }
+            }
+        }
+
+        async function getResourceTypes() {
+            let host = "http://localhost:8080";
+            let response = await fetch(host + "/api/resource-types");
+            let result = await response.json();
+            let table = document.getElementById("rt_list");
+            table.innerHTML = "";
+
+            for (const rt of result) {
+                let row = document.createElement("tr");
+
+                let cell1 = document.createElement("td");
+                cell1.textContent = rt.resource_type_id;
+                row.appendChild(cell1);
+
+                let cell2 = document.createElement("td");
+                cell2.textContent = rt.name;
+                row.appendChild(cell2);
+
+                let cell3 = document.createElement("td");
+                cell3.textContent = rt.kind;
+                row.appendChild(cell3);
+
+                let cell4 = document.createElement("td");
+                cell4.textContent = rt.unit;
+                row.appendChild(cell4);
+
+                let cell5 = document.createElement("td");
+                cell5.textContent = rt.poolAccount ? rt.poolAccount.account_id : "N/A";
+                row.appendChild(cell5);
+
+                table.appendChild(row);
+            }
+        }
+
+        getResourceTypes();
+        setInterval(getResourceTypes, 3000);
+    </script>
+
+
+
+
+
+    <script>
+        function checkEmpty(val) {
+            return val.trim() == "";
+        }
+
+        async function submitProtocol() {
+            let name = document.getElementById("protocol_name").value;
+            let description = document.getElementById("protocol_description").value;
+
+            if (checkEmpty(name) || checkEmpty(description)) {
+                alert("Please fill in all fields!");
+            } else {
+                let host = "http://localhost:8080";
+                let formData = new FormData();
+                formData.append("name", name);
+                formData.append("description", description);
+
+                let request = {
+                    method: "POST", body: formData 
+                };
+                let response = await fetch(host + "/api/protocols", request);
+
+                if (response.status == 200) {
+                    alert("Protocol successfully created!");
+                    document.getElementById("protocol_name").value = "";
+                    document.getElementById("protocol_description").value = "";
+                } else {
+                    let msg = await response.text();
+                    alert(msg);
+                }
+            }
+        }
+
+        async function submitProtocolStep() {
+            let parentId = document.getElementById("step_parent_id").value;
+            let name = document.getElementById("step_name").value;
+            let subId = document.getElementById("step_sub_id").value;
+            let deps = document.getElementById("step_deps").value;
+
+            if (checkEmpty(parentId) || checkEmpty(name) || checkEmpty(subId)) {
+                alert("Parent ID, Step Name, and Sub-Protocol ID are required!");
+            } else {
+                let host = "http://localhost:8080";
+                let formData = new FormData();
+                formData.append("name", name);
+                formData.append("subProtocolId", subId);
+                formData.append("dependencies", deps);
+
+                let request = {
+                    method: "POST",
+                    body: formData
+                };
+
+                let response = await fetch(host + "/api/protocols/" + parentId + "/steps", request);
+
+                if (response.status == 200) {
+                    alert("Protocol step added!");
+                    document.getElementById("step_name").value = "";
+                    document.getElementById("step_sub_id").value = "";
+                    document.getElementById("step_deps").value = "";
+                } else {
+                    let msg = await response.text();
+                    alert(msg);
+                }
+            }
+        }
+
+
+    async function getProtocols() {
+        let host = "http://localhost:8080";
+        let response = await fetch(host + "/api/protocols");
+        let result = await response.json();
+        let table = document.getElementById("protocol_list");
+        table.innerHTML = "";
+
+        for (const entry of result) {
+            let id = entry.protocol_id;
+            let name = entry.name;
+            let description = entry.description;
+            let steps = entry.steps;
+
+            let row = document.createElement("tr");
+
+            let cell1 = document.createElement("td");
+            cell1.textContent = id;
+            row.appendChild(cell1);
+
+            let cell2 = document.createElement("td");
+            cell2.textContent = name;
+            row.appendChild(cell2);
+
+            let cell3 = document.createElement("td");
+            cell3.textContent = description;
+            row.appendChild(cell3);
+
+            let steps_string = "";
+            for (const step of steps) {
+            let dependencies = step.dependsOn;
+            let ans_string = "";
+            
+            for (const item of dependencies) {
+                ans_string += item + "; ";
+            }
+            
+            steps_string += step.name + " (SubID: " + step.subProtocol.protocol_id + ") Deps: [" + ans_string + "] | ";
+        }
+
+            let cell4 = document.createElement("td");
+            cell4.textContent = steps_string;
+            row.appendChild(cell4);
+
+            table.appendChild(row);
+         }
+        }   
+
+        getProtocols();
+        setInterval(getProtocols, 3000);
+    </script>
+
+</body>
+</html>

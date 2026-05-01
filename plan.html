@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Plan</title>
+    <style>
+        table {
+            border: 1px solid;
+            border-collapse: collapse;
+            margin: 30px;
+        }
+        table td, table th {
+            border-left: 1px solid #000;
+            border-right: 1px solid #000;
+            padding: 8px;
+        }
+        table td:first-child{
+            border-left: none;
+        }
+        table td:last-child {
+            border-right: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Plan View</h1>
+    <h3>Create Plan</h3>
+    <label for="plan_name">Name: </label>
+    <input id="plan_name"/>
+    <br>
+    <label for="plan_target_start">Target Start Date (e.g. 2026-05-01T10:00:00): </label>
+    <input id="plan_target_start"/>
+    <br>
+    <label for="plan_protocol_id"> (-1 if wanting to start from scratch)</label>
+    <input id="plan_protocol_id" value="-1"/>
+    <br>
+    <label for="plan_party">Party: </label>
+    <input id="plan_party"/>
+    <br>
+    <label for="plan_location">Location: </label>
+    <input id="plan_location"/>
+    <br>
+    <button onclick="submitPlan()">Create Plan</button>
+    <br>
+    <br>
+
+    <script>
+        function checkEmpty(val) {
+            return val.trim() === "";
+        }
+
+        async function submitPlan() {
+            let name = document.getElementById("plan_name").value;
+            let targetStartDate = document.getElementById("plan_target_start").value;
+            let protocolId = document.getElementById("plan_protocol_id").value;
+            let party = document.getElementById("plan_party").value;
+            let location = document.getElementById("plan_location").value;
+
+            if (checkEmpty(name) || checkEmpty(targetStartDate)) {
+                alert("Name and Target Start Date are required!");
+            } else if (protocolId != -1 && (checkEmpty(party) || checkEmpty(location))) {
+                alert("Party and Location are required when creating from a protocol!");
+            } else {
+                let host = "http://localhost:8080";
+                let formData = new FormData();
+                formData.append("name", name);
+                formData.append("targetStartDate", targetStartDate);
+                formData.append("protocolId", protocolId);
+                formData.append("party", party);
+                formData.append("location", location);
+
+                let request = { method: "POST", body: formData };
+                let response = await fetch(host + "/api/plans", request);
+
+                if (response.status == 200) {
+                    alert("Plan successfully created!");
+                    document.getElementById("plan_name").value = "";
+                    document.getElementById("plan_target_start").value = "";
+                    document.getElementById("plan_protocol_id").value = "-1";
+                    document.getElementById("plan_party").value = "";
+                    document.getElementById("plan_location").value = "";
+                } else {
+                    let msg = await response.text();
+                    alert(msg);
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>
