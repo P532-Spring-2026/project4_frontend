@@ -26,6 +26,7 @@
 
     <h1>Ledger View</h1>
     <h3>View All Accounts</h3>
+    <button onclick="getAccounts()">Refresh</button>
     <table>
         <thead>
             <tr>
@@ -145,7 +146,6 @@
         }
 
         getAccounts();
-        setInterval(getAccounts, 3000);
     </script>
 
 </body>
