@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Action Detail</title>
+    <style>
+        table {
+            border: 1px solid;
+            border-collapse: collapse;
+            margin: 30px;
+        }
+        table td, table th {
+            border-left: 1px solid #000;
+            border-right: 1px solid #000;
+            padding: 8px;
+        }
+        table td:first-child{
+            border-left: none;
+        }
+        table td:last-child {
+            border-right: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Action Detail</h1>
+    <h3>All Actions</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Action ID</th>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Party</th>
+                <th>Time Ref</th>
+                <th>Location</th>
+            </tr>
+        </thead>
+        <tbody id="actions_list"></tbody>
+    </table>
+    <h3>Transitions</h3>
+    <label for="action_id">Action ID: </label>
+    <input id="action_id"/>
+    <br>
+    <br>
+    <label for="suspend_reason">Suspend Reason:</label>
+    <input id="suspend_reason"/>
+    <br>
+    <br>
+    <button onclick="implement()">Implement</button>
+    <button onclick="complete()">Complete</button>
+    <button onclick="suspend()">Suspend</button>
+    <button onclick="resume()">Resume</button>
+    <button onclick="abandon()">Abandon</button>
+    <h3>Proposed vs Implemented</h3>
+    <table>
+    <thead>
+        <tr>
+            <th>Implemented Action ID</th>
+            <th>Proposed Action ID</th>
+            <th>Planned Party</th>
+            <th>Actual Party</th>
+            <th>Planned Location</th>
+            <th>Actual Location</th>
+            <th>Planned Time Ref</th>
+            <th>Actual Start</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody id="differences"></tbody>
+    </table>
+    <h3>Add Resource Allocation</h3>
+    <label for="a_action_id">Action ID: </label>
+    <input id="a_action_id"/>
+    <br>
+    <label for="a_resource_type_id">Resource Type ID: </label>
+    <input id="a_resource_type_id"/>
+    <br>
+    <label for="a_quantity">Quantity: </label>
+    <input id="a_quantity"/>
+    <br>
+    <label for="a_kind">Kind: </label>
+    <select id="a_kind">
+        <option value="GENERAL">GENERAL</option>
+        <option value="SPECIFIC">SPECIFIC</option>
+    </select>
+    <br>
+    <label for="a_asset_id">Asset ID (-1 if GENERAL): </label>
+    <input id="a_asset_id" value="-1"/>
+    <br>
+    <label for="a_time_period">Time Period: </label>
+    <input id="a_time_period"/>
+    <br>
+    <button onclick="addAllocation()">Add Allocation</button>
+
+    <script>
+    async function addAllocation() {
+        let actionId = document.getElementById("a_action_id").value;
+        let resourceTypeId = document.getElementById("a_resource_type_id").value;
+        let quantity = document.getElementById("a_quantity").value;
+        let kind = document.getElementById("a_kind").value;
+        let assetId = document.getElementById("a_asset_id").value;
+        let timePeriod = document.getElementById("a_time_period").value;
+
+        if (checkEmpty(actionId) || checkEmpty(resourceTypeId) || checkEmpty(quantity)) {
+            alert("Action ID, Resource Type ID and Quantity are required!");
+        } else if (kind === "SPECIFIC" && (checkEmpty(assetId) || checkEmpty(timePeriod))) {
+            alert("Asset ID and Time Period are required for SPECIFIC allocations!");
+        } else {
+            let host = "https://project4-backend-84hx.onrender.com";
+            let formData = new FormData();
+            formData.append("resourceTypeId", resourceTypeId);
+            formData.append("quantity", quantity);
+            formData.append("kind", kind);
+            formData.append("assetId", assetId);
+            formData.append("timePeriod", timePeriod);
+
+            let request = {
+                method: "POST",
+                body: formData
+            };
+            let response = await fetch(host + "/api/actions/" + actionId + "/allocations", request);
+
+            if (response.status == 200) {
+                alert("Allocation successfully attached!");
+                document.getElementById("a_action_id").value = "";
+                document.getElementById("a_resource_type_id").value = "";
+                document.getElementById("a_quantity").value = "";
+                document.getElementById("a_asset_id").value = "-1";
+                document.getElementById("a_time_period").value = "";
+            } else {
+                let msg = await response.text();
+                alert(msg);
+            }
+        }
+    }
+    </script>
+
+    <script>
+    async function getImplementedActions() {
+        let host = "https://project4-backend-84hx.onrender.com";
+        let response = await fetch(host + "/api/actions/implemented");
+        let result = await response.json();
+        let table = document.getElementById("differences");
+        table.innerHTML = "";
+
+        for (const impl of result) {
+            let row = document.createElement("tr");
+
+            let cell1 = document.createElement("td");
+            cell1.textContent = impl.implemented_action_id;
+            row.appendChild(cell1);
+
+            let cell2 = document.createElement("td");
+            cell2.textContent = impl.proposedAction.plan_node_id;
+            row.appendChild(cell2);
+
+            let cell3 = document.createElement("td");
+            cell3.textContent = impl.proposedAction.party;
+            row.appendChild(cell3);
+
+            let cell4 = document.createElement("td");
+            cell4.textContent = impl.actualParty;
+            row.appendChild(cell4);
+
+            let cell5 = document.createElement("td");
+            cell5.textContent = impl.proposedAction.location;
+            row.appendChild(cell5);
+
+            let cell6 = document.createElement("td");
+            cell6.textContent = impl.actualLocation;
+            row.appendChild(cell6);
+
+            let cell7 = document.createElement("td");
+            cell7.textContent = impl.proposedAction.timeRef;
+            row.appendChild(cell7);
+
+            let cell8 = document.createElement("td");
+            cell8.textContent = impl.actualStart;
+            row.appendChild(cell8);
+
+            let cell9 = document.createElement("td");
+            cell9.textContent = impl.status;
+            row.appendChild(cell9);
+
+            table.appendChild(row);
+        }
+    }
+
+    getImplementedActions();
+    setInterval(getImplementedActions, 3000);
+    </script>
+    
+
+    <script>
+        async function implement() {
+            let id = document.getElementById("action_id").value;
+            if (checkEmpty(id)) {
+                alert("Please enter an Action ID!");
+            } else {
+                let host = "https://project4-backend-84hx.onrender.com";
+                let request = {
+                    method: "POST"
+                };
+                let response = await fetch(host + "/api/actions/" + id + "/implement", request);
+                if (response.status == 200) {
+                    alert("Action successfully implemented!");
+                    document.getElementById("action_id").value = "";
+                } else {
+                    let msg = await response.text();
+                    alert(msg);
+                }
+            }
+        }
+
+        async function complete() {
+            let id = document.getElementById("action_id").value;
+            if (checkEmpty(id)) {
+                alert("Please enter an Action ID!");
+            } else {
+                let host = "https://project4-backend-84hx.onrender.com";
+                let request = {
+                    method: "POST"
+                };
+                let response = await fetch(host + "/api/actions/" + id + "/complete", request);
+                if (response.status == 200) {
+                    alert("Action successfully completed!");
+                    document.getElementById("action_id").value = "";
+                } else {
+                    let msg = await response.text();
+                    alert(msg);
+                }
+            }
+        }
+
+        async function suspend() {
+            let id = document.getElementById("action_id").value;
+            let reason = document.getElementById("suspend_reason").value;
+            if (checkEmpty(id)) {
+                alert("Please enter an Action ID!");
+            } else if (checkEmpty(reason)) {
+                alert("Please enter a suspend reason!");
+            } else {
+                let host = "https://project4-backend-84hx.onrender.com";
+                let formData = new FormData();
+                formData.append("reason", reason);
+                let request = {
+                    method: "POST",
+                    body: formData
+                };
+                let response = await fetch(host + "/api/actions/" + id + "/suspend", request);
+                if (response.status == 200) {
+                    alert("Action successfully suspended!");
+                    document.getElementById("action_id").value = "";
+                    document.getElementById("suspend_reason").value = "";
+                } else {
+                    let msg = await response.text();
+                    alert(msg);
+                }
+            }
+        }
+
+        async function resume() {
+            let id = document.getElementById("action_id").value;
+            if (checkEmpty(id)) {
+                alert("Please enter an Action ID!");
+            } else {
+                let host = "https://project4-backend-84hx.onrender.com";
+                let request = {
+                    method: "POST"
+                };
+                let response = await fetch(host + "/api/actions/" + id + "/resume", request);
+                if (response.status == 200) {
+                    alert("Action successfully resumed!");
+                    document.getElementById("action_id").value = "";
+                } else {
+                    let msg = await response.text();
+                    alert(msg);
+                }
+            }
+        }
+
+        async function abandon() {
+            let id = document.getElementById("action_id").value;
+            if (checkEmpty(id)) {
+                alert("Please enter an Action ID!");
+            } else {
+                let host = "https://project4-backend-84hx.onrender.com";
+                let request = {
+                    method: "POST"
+                };
+                let response = await fetch(host + "/api/actions/" + id + "/abandon", request);
+                if (response.status == 200) {
+                    alert("Action successfully abandoned!");
+                    document.getElementById("action_id").value = "";
+                } else {
+                    let msg = await response.text();
+                    alert(msg);
+                }
+            }
+        }
+    </script>
+
+    <script>
+        function checkEmpty(val) {
+            return val.trim() == "";
+        }
+
+        async function getActions() {
+            let host = "https://project4-backend-84hx.onrender.com";
+            let response = await fetch(host + "/api/actions");
+            let result = await response.json();
+            let table = document.getElementById("actions_list");
+            table.innerHTML = "";
+
+            for (const action of result) {
+                let row = document.createElement("tr");
+
+                let cell1 = document.createElement("td");
+                cell1.textContent = action.plan_node_id;
+                row.appendChild(cell1);
+
+                let cell2 = document.createElement("td");
+                cell2.textContent = action.name;
+                row.appendChild(cell2);
+
+                let cell3 = document.createElement("td");
+                cell3.textContent = action.state_name;
+                row.appendChild(cell3);
+
+                let cell4 = document.createElement("td");
+                cell4.textContent = action.party;
+                row.appendChild(cell4);
+
+                let cell5 = document.createElement("td");
+                cell5.textContent = action.timeRef;
+                row.appendChild(cell5);
+
+                let cell6 = document.createElement("td");
+                cell6.textContent = action.location;
+                row.appendChild(cell6);
+
+                table.appendChild(row);
+            }
+        }
+
+        getActions();
+        setInterval(getActions, 3000);
+    </script>
+
+</body>
+</html>

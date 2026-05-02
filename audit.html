@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Audit Log</title>
+    <style>
+        table {
+            border: 1px solid;
+            border-collapse: collapse;
+            margin: 30px;
+        }
+        table td, table th {
+            border-left: 1px solid #000;
+            border-right: 1px solid #000;
+            padding: 8px;
+        }
+        table td:first-child{
+            border-left: none;
+        }
+        table td:last-child {
+            border-right: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Audit Log</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Audit ID</th>
+                <th>Event</th>
+                <th>Account ID</th>
+                <th>Entry ID</th>
+                <th>Action ID</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody id="audit_list"></tbody>
+    </table>
+
+    <script>
+        async function getAuditLog() {
+            let host = "https://project4-backend-84hx.onrender.com";
+            let response = await fetch(host + "/api/audit-log");
+            let result = await response.json();
+            let table = document.getElementById("audit_list");
+            table.innerHTML = "";
+
+            for (const entry of result) {
+                let row = document.createElement("tr");
+
+                let cell1 = document.createElement("td");
+                cell1.textContent = entry.audit_id;
+                row.appendChild(cell1);
+
+                let cell2 = document.createElement("td");
+                cell2.textContent = entry.event;
+                row.appendChild(cell2);
+
+                let cell3 = document.createElement("td");
+                cell3.textContent = entry.accountId;
+                row.appendChild(cell3);
+
+                let cell4 = document.createElement("td");
+                cell4.textContent = entry.entryId;
+                row.appendChild(cell4);
+
+                let cell5 = document.createElement("td");
+                cell5.textContent = entry.actionId;
+                row.appendChild(cell5);
+
+                let cell6 = document.createElement("td");
+                cell6.textContent = entry.timestamp;
+                row.appendChild(cell6);
+
+                table.appendChild(row);
+            }
+        }
+
+        getAuditLog();
+        setInterval(getAuditLog, 3000);
+    </script>
+
+</body>
+</html>

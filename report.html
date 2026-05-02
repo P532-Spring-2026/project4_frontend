@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Report</title>
+    <style>
+        table {
+            border: 1px solid;
+            border-collapse: collapse;
+            margin: 30px;
+        }
+        table td, table th {
+            border-left: 1px solid #000;
+            border-right: 1px solid #000;
+            padding: 8px;
+        }
+        table td:first-child{
+            border-left: none;
+        }
+        table td:last-child {
+            border-right: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Plan Summary Report</h1>
+    <h3>Generate Report</h3>
+    <label for="report_plan_id">Plan ID: </label>
+    <input id="report_plan_id"/>
+    <button onclick="getReport()">Generate Report</button>
+    <br>
+    <br>
+    <span id="report_output"></span>
+
+    <script>
+        function checkEmpty(val) {
+            return val.trim() == "";
+        }
+
+        async function getReport() {
+            let id = document.getElementById("report_plan_id").value;
+
+            if (checkEmpty(id)) {
+                alert("Please enter a Plan ID!");
+            } else {
+                let host = "https://project4-backend-84hx.onrender.com";
+                let response = await fetch(host + "/api/plans/" + id + "/report");
+
+                if (response.status == 200) {
+                    let report = await response.text();
+                    document.getElementById("report_output").textContent = report;
+                } else {
+                    let msg = await response.text();
+                    alert(msg);
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>
