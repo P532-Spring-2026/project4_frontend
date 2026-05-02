@@ -105,7 +105,7 @@
 
         if (checkEmpty(actionId) || checkEmpty(resourceTypeId) || checkEmpty(quantity)) {
             alert("Action ID, Resource Type ID and Quantity are required!");
-        } else if (kind === "SPECIFIC" && (checkEmpty(assetId) || checkEmpty(timePeriod))) {
+        } else if (kind == "SPECIFIC" && (checkEmpty(assetId) || checkEmpty(timePeriod))) {
             alert("Asset ID and Time Period are required for SPECIFIC allocations!");
         } else {
             let host = "https://project4-backend-84hx.onrender.com";
