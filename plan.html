@@ -54,6 +54,24 @@
     <br>
     <br>
     <div id="plan_tree"></div>
+    <br>
+    <br>
+    <h3>View Plan Metrics</h3>
+    <label for="metrics_plan_id">Plan/Node ID: </label>
+    <input id="metrics_plan_id"/>
+    <button onclick="getMetrics()">Get Metrics</button>
+    <br>
+    <br>
+    <table>
+        <thead>
+            <tr>
+                <th>Completion Ratio</th>
+                <th>Total Resource Cost</th>
+                <th>Risk Score</th>
+            </tr>
+        </thead>
+        <tbody id="metrics_list"></tbody>
+    </table>
     <h3>View Plan IDs</h3>
     <table>
         <thead>
@@ -64,6 +82,43 @@
         </thead>
         <tbody id="plans_list"></tbody>
     </table>
+
+    <script>
+        async function getMetrics() {
+        let id = document.getElementById("metrics_plan_id").value;
+        if (checkEmpty(id)) {
+            alert("Please enter a Plan/Node ID!");
+        } else {
+            let host = "https://project4-backend-84hx.onrender.com";
+            let response = await fetch(host + "/api/plans/" + id + "/metrics");
+
+            if (response.status == 200) {
+                let metrics = await response.json();
+                let table = document.getElementById("metrics_list");
+                table.innerHTML = "";
+
+                let row = document.createElement("tr");
+
+                let cell1 = document.createElement("td");
+                cell1.textContent = metrics[0];
+                row.appendChild(cell1);
+
+                let cell2 = document.createElement("td");
+                cell2.textContent = metrics[1];
+                row.appendChild(cell2);
+
+                let cell3 = document.createElement("td");
+                cell3.textContent = metrics[2];
+                row.appendChild(cell3);
+
+                table.appendChild(row);
+            } else {
+                let msg = await response.text();
+                alert(msg);
+            }
+        }
+    }
+    </script>
 
     <script>
         function checkEmpty(val) {
