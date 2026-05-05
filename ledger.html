@@ -88,11 +88,16 @@
                 for (const entry of result) {
                     if (showAll) {
                         //do nothing and continue with loop
-                    } else if (entry.type == "CONSUMABLE" && !showConsumable) {
-                        continue; //skip to next entry
-                    } else if (entry.type == "ASSET" && !showAsset) {
-                        continue; //skip to next entry
-                    } //if else reached, entry added 
+                    } 
+                    else if (entry.type == "CONSUMABLE" && showConsumable) {
+                       //continue with loop
+                    } else if (entry.type == "ASSET" && showAsset) {
+                        //continue with loop
+                    } 
+                    else{
+                        continue;
+                    }
+                    
 
                     let row = document.createElement("tr");
 
