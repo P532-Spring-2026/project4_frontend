@@ -178,7 +178,11 @@
                     container.innerHTML = "";
                     if (Array.isArray(data)) {
                         for (const node of data) {
-                            container.appendChild(renderjson(recurseNode(node)));
+                            container.appendChild(renderjson({
+                                name: node.name,
+                                type: node.type,
+                                status: node.status
+                            }));
                         }
                     } else {
                         container.appendChild(renderjson(recurseNode(data)));
