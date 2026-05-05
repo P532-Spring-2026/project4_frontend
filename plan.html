@@ -48,6 +48,8 @@
     <h3>View Plan Tree</h3>
     <label for="plan_id">Plan ID: </label>
     <input id="plan_id"/>
+    <label for="plan_depth">Depth Limit (-1 for no limit): </label>
+    <input id="plan_depth" value="-1"/>
     <button onclick="getPlan()">Load Plan</button>
     <br>
     <br>
@@ -107,18 +109,25 @@
 
         async function getPlan() {
             let id = document.getElementById("plan_id").value;
+            let depthLimit = document.getElementById("plan_depth").value;
 
             if (checkEmpty(id)) {
                 alert("Please enter a Plan ID!");
             } else {
                 let host = "https://project4-backend-84hx.onrender.com";
-                let response = await fetch(host + "/api/plans/" + id);
+                let response = await fetch(host + "/api/plans/" + id + "?depthLimit=" + depthLimit);
 
                 if (response.status == 200) {
-                    let plan = await response.json();
+                    let data = await response.json();
                     let container = document.getElementById("plan_tree");
                     container.innerHTML = "";
-                    container.appendChild(renderjson(recurseNode(plan)));
+                    if (Array.isArray(data)) {
+                        for (const node of data) {
+                            container.appendChild(renderjson(recurseNode(node)));
+                        }
+                    } else {
+                        container.appendChild(renderjson(recurseNode(data)));
+                    }
                 } else {
                     let msg = await response.text();
                     alert(msg);

@@ -28,6 +28,20 @@
     <h3>Generate Report</h3>
     <label for="report_plan_id">Plan ID: </label>
     <input id="report_plan_id"/>
+    <br>
+    <label for="report_status_filter">Status Filter (optional): </label>
+    <select id="report_status_filter">
+        <option value="">None</option>
+        <option value="PROPOSED">PROPOSED</option>
+        <option value="PENDING_APPROVAL">PENDING_APPROVAL</option>
+        <option value="IN_PROGRESS">IN_PROGRESS</option>
+        <option value="SUSPENDED">SUSPENDED</option>
+        <option value="COMPLETED">COMPLETED</option>
+        <option value="REOPENED">REOPENED</option>
+        <option value="ABANDONED">ABANDONED</option>
+    </select>
+    <br>
+    <br>
     <button onclick="getReport()">Generate Report</button>
     <br>
     <br>
@@ -40,12 +54,16 @@
 
         async function getReport() {
             let id = document.getElementById("report_plan_id").value;
+            let statusFilter = document.getElementById("report_status_filter").value;
 
             if (checkEmpty(id)) {
                 alert("Please enter a Plan ID!");
             } else {
                 let host = "https://project4-backend-84hx.onrender.com";
-                let response = await fetch(host + "/api/plans/" + id + "/report");
+                let url = host + "/api/plans/" + id + "/report?filter=" + statusFilter;
+
+                
+                let response = await fetch(url);
 
                 if (response.status == 200) {
                     let report = await response.text();
