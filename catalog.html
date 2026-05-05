@@ -76,6 +76,9 @@
     <label for="rt_unit">Unit of Measure: </label>
     <input id="rt_unit"/>
     <br>
+    <label for="rt_cost">Unit Cost: </label>
+    <input id="rt_cost"/>
+    <br>
     <button onclick="submitResourceType()">Create Resource Type</button>
     <br>
     <br>
@@ -88,6 +91,7 @@
                 <th>Kind</th>
                 <th>Unit</th>
                 <th>Pool Account ID</th>
+                <th>Unit Cost</th>
             </tr>
         </thead>
         <tbody id="rt_list"></tbody>
@@ -99,8 +103,9 @@
             let name = document.getElementById("rt_name").value;
             let kind = document.getElementById("rt_kind").value;
             let unit = document.getElementById("rt_unit").value;
+            let cost = document.getElementById("rt_cost").value;
 
-            if (checkEmpty(name) || checkEmpty(unit)) {
+            if (checkEmpty(name) || checkEmpty(unit) || checkEmpty(cost)) {
                 alert("Please fill in all fields!");
             } else {
                 let host = "https://project4-backend-84hx.onrender.com";
@@ -108,9 +113,11 @@
                 formData.append("name", name);
                 formData.append("kind", kind);
                 formData.append("unit", unit);
+                formData.append("cost", cost);
 
                 let request = {
-                    method: "POST", body: formData
+                    method: "POST",
+                    body: formData
                 };
                 let response = await fetch(host + "/api/resource-types", request);
 
@@ -118,6 +125,7 @@
                     alert("Resource type successfully created!");
                     document.getElementById("rt_name").value = "";
                     document.getElementById("rt_unit").value = "";
+                    document.getElementById("rt_cost").value = "";
                 } else {
                     let msg = await response.text();
                     alert(msg);
@@ -154,6 +162,10 @@
                 let cell5 = document.createElement("td");
                 cell5.textContent = rt.poolAccount ? rt.poolAccount.account_id : "N/A";
                 row.appendChild(cell5);
+
+                let cell6 = document.createElement("td");
+                cell6.textContent = rt.unitCost;
+                row.appendChild(cell6);
 
                 table.appendChild(row);
             }
