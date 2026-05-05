@@ -45,6 +45,11 @@
     <button onclick="getEntries()">Get Entries</button>
     <br>
     <br>
+    <label><input type="checkbox" id="filter_consumable"> Show Consumable Entries</label>
+    <label><input type="checkbox" id="filter_asset"> Show Asset Entries</label>
+    <label><input type="checkbox" id="filter_all"> Show All</label>
+    <br>
+    <br>
     <table>
         <thead>
             <tr>
@@ -76,7 +81,19 @@
                 let table = document.getElementById("entries_list");
                 table.innerHTML = "";
 
+                let showAll = document.getElementById("filter_all").checked;
+                let showConsumable = document.getElementById("filter_consumable").checked;
+                let showAsset = document.getElementById("filter_asset").checked;
+
                 for (const entry of result) {
+                    if (showAll) {
+                        //do nothing and continue with loop
+                    } else if (entry.type == "CONSUMABLE" && !showConsumable) {
+                        continue; //skip to next entry
+                    } else if (entry.type == "ASSET" && !showAsset) {
+                        continue; //skip to next entry
+                    } //if else reached, entry added 
+
                     let row = document.createElement("tr");
 
                     let cell1 = document.createElement("td");

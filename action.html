@@ -53,6 +53,12 @@
     <button onclick="suspend()">Suspend</button>
     <button onclick="resume()">Resume</button>
     <button onclick="abandon()">Abandon</button>
+    <br>
+    <br>
+    <button onclick="submitForApproval()">Submit For Approval</button>
+    <button onclick="approve()">Approve</button>
+    <button onclick="reject()">Reject</button>
+    <button onclick="reopen()">Reopen</button>
     <h3>Proposed vs Implemented</h3>
     <table>
     <thead>
@@ -93,6 +99,88 @@
     <input id="a_time_period"/>
     <br>
     <button onclick="addAllocation()">Add Allocation</button>
+
+    <script>
+        async function submitForApproval() {
+            let id = document.getElementById("action_id").value;
+            if (checkEmpty(id)) {
+                alert("Please enter an Action ID!");
+            } else {
+                let host = "https://project4-backend-84hx.onrender.com";
+                let request = {
+                    method: "POST"
+                };
+                let response = await fetch(host + "/api/actions/" + id + "/submit-for-approval", request);
+                if (response.status == 200) {
+                    alert("Action successfully submitted for approval!");
+                    document.getElementById("action_id").value = "";
+                } else {
+                    let msg = await response.text();
+                    alert(msg);
+                }
+            }
+        }
+
+        async function approve() {
+            let id = document.getElementById("action_id").value;
+            if (checkEmpty(id)) {
+                alert("Please enter an Action ID!");
+            } else {
+                let host = "https://project4-backend-84hx.onrender.com";
+                let request = {
+                    method: "POST"
+                };
+                let response = await fetch(host + "/api/actions/" + id + "/approve", request);
+                if (response.status == 200) {
+                    alert("Action successfully approved!");
+                    document.getElementById("action_id").value = "";
+                } else {
+                    let msg = await response.text();
+                    alert(msg);
+                }
+            }
+        }
+
+        async function reject() {
+            let id = document.getElementById("action_id").value;
+            if (checkEmpty(id)) {
+                alert("Please enter an Action ID!");
+            } else {
+                let host = "https://project4-backend-84hx.onrender.com";
+                let request = {
+                    method: "POST"
+                };
+                let response = await fetch(host + "/api/actions/" + id + "/reject", request);
+                if (response.status == 200) {
+                    alert("Action successfully rejected!");
+                    document.getElementById("action_id").value = "";
+                } else {
+                    let msg = await response.text();
+                    alert(msg);
+                }
+            }
+        }
+
+        async function reopen() {
+            let id = document.getElementById("action_id").value;
+            if (checkEmpty(id)) {
+                alert("Please enter an Action ID!");
+            } else {
+                let host = "https://project4-backend-84hx.onrender.com";
+                let request = {
+                    method: "POST"
+                };
+                let response = await fetch(host + "/api/actions/" + id + "/reopen", request);
+                if (response.status == 200) {
+                    alert("Action successfully reopened!");
+                    document.getElementById("action_id").value = "";
+                } else {
+                    let msg = await response.text();
+                    alert(msg);
+                }
+            }
+        }
+</script>
 
     <script>
     async function addAllocation() {
